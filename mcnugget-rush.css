@@ -1,0 +1,10 @@
+body {
+    font-family:'Groutpix Flow Sans Serif', monospace;
+    text-align: center;
+}
+
+#board {
+    /* background-color: skyblue; */
+    background-image: url("./bg-01.png");
+    background-size: cover;
+}
