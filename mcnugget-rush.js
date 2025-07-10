@@ -39,6 +39,7 @@ let pipeHeight = 400;
 let pipeX = boardWidth;
 let pipeY = 0;
 
+let pipeIntervalId;
 let topPipeImg;
 let bottomPipeImg;
 
@@ -99,8 +100,6 @@ window.onload = function() {
     bottomPipeImg = new Image();
     bottomPipeImg.src = "./friesbottom3.png";
 
-    requestAnimationFrame(update);
-    setInterval(placePipes, 1500); //every 1500ms = 1.5s
     document.addEventListener("keydown", handleStartScreen);
 }
 
@@ -118,6 +117,8 @@ function handleStartScreen(e) {
         document.removeEventListener("keydown", handleStartScreen);
         document.addEventListener("keydown", moveNugget);
         requestAnimationFrame(update);
+        pipeIntervalId = setInterval(placePipes, 1500); // Start generating pipes only now
+
     }
 }
 
