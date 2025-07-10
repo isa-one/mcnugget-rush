@@ -12,6 +12,14 @@ let boardWidth = 360;
 let boardHeight = 640;
 let context;
 
+//game state
+let gameState = "start";
+
+let titleText = new Image();
+titleText.src = "./title text.png";
+let startText = new Image();
+startText.src = "./start text.png";
+
 //nugget object
 let nuggetWidth = 33.95;
 let nuggetHeight = 35;
@@ -46,6 +54,10 @@ bottomPipeImgs[1].src = "./friesbottom2.png";
 bottomPipeImgs[2].src = "./friesbottom3.png";
 bottomPipeImgs[3].src = "./friesbottom4.png";
 
+let coinImg = new Image();
+coinImg.src = "./coin.png";
+let coinArray = [];
+
 //physics
 let velocityX = -2; //pipes moving left speed
 let velocityY = 0; //nugget jump speed
@@ -78,7 +90,7 @@ window.onload = function() {
     nuggetImg = new Image();
     nuggetImg.src = "./mcnugget.png";
     nuggetImg.onload = function() {
-        context.drawImage(nuggetImg, nugget.x, nugget.y, nugget.width, nugget.height);
+        drawStartScreen(); // Draw start screen after nugget loads
     }
 
     topPipeImg = new Image();
@@ -89,10 +101,28 @@ window.onload = function() {
 
     requestAnimationFrame(update);
     setInterval(placePipes, 1500); //every 1500ms = 1.5s
-    document.addEventListener("keydown", moveNugget);
+    document.addEventListener("keydown", handleStartScreen);
+}
+
+function drawStartScreen() {
+    context.clearRect(0, 0, board.width, board.height);
+    context.drawImage(nuggetImg, nugget.x, nugget.y, nugget.width, nugget.height);
+    context.drawImage(titleText, board.width/2 - 125, 90, 250, 130);
+    context.drawImage(startText, board.width/2 - 80, 500, 160, 80);
+
+}
+
+function handleStartScreen(e) {
+    if (gameState === "start" && (e.code === "Space" || e.code === "Enter")) {
+        gameState = "playing";
+        document.removeEventListener("keydown", handleStartScreen);
+        document.addEventListener("keydown", moveNugget);
+        requestAnimationFrame(update);
+    }
 }
 
 function update() {
+    if (gameState !== "playing") return;
     requestAnimationFrame(update);
     if (gameOver) {
         return;
@@ -108,20 +138,24 @@ function update() {
     if (nugget.y > board.height) {
         gameOver = true;
     }
+
+    
     // fry pipes on canvas
     for (let i = 0; i < pipeArray.length; i++) {
         let pipe = pipeArray[i];
         pipe.x += velocityX;
 
-        // UNCOMMENT IF PIPES ARE TO BE SQUARE
+        // FOR PIPES TO BE SQUARE:
         // context.fillStyle = "#ffcb4a";
         // context.fillRect(pipe.x, pipe.y, pipe.width, pipe.height);
         context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
-        if (!pipe.passed && nugget.x > pipe.x + pipe.width) {
-            score += 0.5; // because there are 2 pipes
-            pipe.passed = true;
-        }
+
+        // FOR PIPE-BASED SCORING:
+        // if (!pipe.passed && nugget.x > pipe.x + pipe.width) {
+        //     score += 0.5; // because there are 2 pipes
+        //     pipe.passed = true;
+        // }
 
         if (detectCollision(nugget, pipe)) {
             gameOver = true;
@@ -132,6 +166,24 @@ function update() {
     while (pipeArray.length > 0 && pipeArray[0].x < -pipeWidth) {
         pipeArray.shift(); //removes first element from the array
 
+    }
+
+    for (let i = 0; i < coinArray.length; i++) {
+        let coin = coinArray[i];
+        coin.x += velocityX;
+        if (!coin.collected) {
+            context.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height);
+            if (detectCollision(nugget, coin)) { // coin scoring mechanism
+                score += 1;
+                coin.collected = true;
+                // Optionally, increase score or play sound here
+            }
+        }
+    }
+
+    // Remove coins that have gone off screen or collected
+    while (coinArray.length > 0 && (coinArray[0].x < -32 || coinArray[0].collected)) {
+        coinArray.shift();
     }
 
     //score
@@ -193,6 +245,16 @@ function placePipes() {
         passed: false
     }
     pipeArray.push(bottomPipe);
+
+    let coinSize = 32;
+    let coin = {
+        x: pipeX + pipeWidth/2 - coinSize/2,
+        y: randomPipeY + pipeHeight + openingSpace/2 - coinSize/2,
+        width: coinSize,
+        height: coinSize,
+        collected: false
+    }
+    coinArray.push(coin);
 }
 
 function moveNugget(e) {
@@ -204,6 +266,7 @@ function moveNugget(e) {
         if (gameOver) {
             nugget.y = nuggetY;
             pipeArray = [];
+            coinArray = [];
             score = 0;
             gameOver = false
         }
