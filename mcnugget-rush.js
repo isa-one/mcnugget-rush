@@ -12,9 +12,13 @@ let boardWidth = 360;
 let boardHeight = 640;
 let context;
 
-//game state
+//game states
 let gameState = "start";
+let gameOver = false;
+let score = 0;
+let bestScore = 0;
 
+//start screen componets
 let titleText = new Image();
 titleText.src = "./title text.png";
 let startText = new Image();
@@ -55,6 +59,7 @@ bottomPipeImgs[1].src = "./friesbottom2.png";
 bottomPipeImgs[2].src = "./friesbottom3.png";
 bottomPipeImgs[3].src = "./friesbottom4.png";
 
+//coin
 let coinImg = new Image();
 coinImg.src = "./coin.png";
 let coinArray = [];
@@ -64,10 +69,7 @@ let velocityX = -2; //pipes moving left speed
 let velocityY = 0; //nugget jump speed
 let gravity = 0.4;
 
-let gameOver = false;
-let score = 0;
-let bestScore = 0;
-
+//game over screen components
 let gameOverBg = new Image();
 gameOverBg.src = "game over screen assets/game over box.png";
 let gameOverTextImg = new Image();
@@ -177,7 +179,6 @@ function update() {
             if (detectCollision(nugget, coin)) { // coin scoring mechanism
                 score += 1;
                 coin.collected = true;
-                // Optionally, increase score or play sound here
             }
         }
     }
